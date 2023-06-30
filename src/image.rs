@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-
+// mod tests;
 use image::{ImageBuffer, Rgb, RgbImage};
 use rand::Rng;
 
@@ -102,25 +102,27 @@ impl Image {
         self.height = height;
         self.pixels = cropped_pixels;
     }
+    pub fn add_noise(&mut self, noise_level: u8) {
+        let mut rng = rand::thread_rng();
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let noise_r = rng.gen_range(-(2 * noise_level as i16)..=(2 * noise_level as i16));
+                let noise_g = rng.gen_range(-(2 * noise_level as i16)..=(2 * noise_level as i16));
+                let noise_b = rng.gen_range(-(2 * noise_level as i16)..=(2 * noise_level as i16));
+
+                let pixel = &mut self.pixels[y as usize][x as usize];
+                let pixel_r = pixel[0] as i16 + noise_r;
+                let pixel_g = pixel[1] as i16 + noise_g;
+                let pixel_b = pixel[2] as i16 + noise_b;
+
+                pixel[0] = pixel_r.clamp(0, 255) as u8;
+                pixel[1] = pixel_g.clamp(0, 255) as u8;
+                pixel[2] = pixel_b.clamp(0, 255) as u8;
+            }
+        }
+    }
 }
 
 pub fn main() {
-    let mut gradient_image = Image::new(8, 8);
-
-    // Generate and save gradient image
-    gradient_image.generate_gradient_image([0, 0, 0], [255, 255, 255]);
-    let gradient_image_clone = gradient_image.clone().to_rgb_image();
-    // gradient_image_clone.display();
-
-    gradient_image_clone
-        .save("images/original_gradient_image.png")
-        .unwrap();
-
-    // Clone and resize the image, then save
-    let mut resized_image = gradient_image.clone();
-    resized_image.resize(16, 16);
-    let resized_image = resized_image.to_rgb_image();
-    resized_image
-        .save("images/resized_gradient_image.png")
-        .unwrap();
+    // tests::main();
 }
